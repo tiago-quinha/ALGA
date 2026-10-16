@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Análise de Testes ALGA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .tab-btn {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .section-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .total-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.5rem;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tr.data-row {
+            background: rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        tr.data-row td {
+            padding: 1rem;
+        }
+
+        tr.data-row td:first-child {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            font-weight: 600;
+        }
+
+        tr.data-row td:last-child {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        tr.data-row:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .diff-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .diff-1 { background: #10b981; color: #fff; }
+        .diff-2 { background: #34d399; color: #064e3b; }
+        .diff-3 { background: #fbbf24; color: #78350f; }
+        .diff-4 { background: #f97316; color: #fff; }
+        .diff-5 { background: #ef4444; color: #fff; }
+
+        .progress-bar-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 10px;
+            transition: width 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Álgebra Linear e Geometria Analítica</h1>
+        <p class="subtitle">Análise Estatística Interativa de Testes e Exames</p>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+<button class="tab-btn active" onclick="showTab(0)">Análise Global (Todos os Testes)</button>
+<button class="tab-btn " onclick="showTab(1)">Análise: 1ª Frequência (FREQ1)</button>
+<button class="tab-btn " onclick="showTab(2)">Análise: 2ª Frequência (FREQ2)</button>
+<button class="tab-btn " onclick="showTab(3)">Análise: Exame de Época Normal (EEN)</button>
+<button class="tab-btn " onclick="showTab(4)">Análise: Exame de Época de Recurso (EER)</button>
+</div>
+
+<div class="content-wrapper">
+<div id="section-0" class="section-content active">
+<div class="card">
+<div class="card-header">
+<h2 class="card-title">Análise Global (Todos os Testes)</h2>
+<span class="total-badge">Total de Questões Analisadas: 670</span>
+</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Tipo de Questão</th><th>Ocorrências</th><th>Percentagem</th><th>Dificuldade</th></tr></thead>
+<tbody>
+<tr class="data-row">
+<td>Outros</td>
+<td>106</td>
+<td>15.8%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 15.8%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Operações com Matrizes e Equações</td>
+<td>93</td>
+<td>13.9%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 13.9%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Distâncias, Ângulos, Áreas e Volumes</td>
+<td>69</td>
+<td>10.3%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 10.3%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Valores e Vetores Próprios</td>
+<td>64</td>
+<td>9.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 9.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Inversão de Matrizes</td>
+<td>54</td>
+<td>8.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 8.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Gauss)</td>
+<td>48</td>
+<td>7.2%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.2%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Base e Dimensão</td>
+<td>47</td>
+<td>7.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Independência Linear</td>
+<td>38</td>
+<td>5.7%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 5.7%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Cálculo de Determinantes</td>
+<td>37</td>
+<td>5.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 5.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Diagonalização de Matrizes</td>
+<td>31</td>
+<td>4.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Característica de Matriz</td>
+<td>24</td>
+<td>3.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Subespaços Vetoriais</td>
+<td>17</td>
+<td>2.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Sistemas com parâmetros (Discussão)</td>
+<td>16</td>
+<td>2.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Retas e Planos</td>
+<td>15</td>
+<td>2.2%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.2%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Produto Interno e Gram-Schmidt</td>
+<td>8</td>
+<td>1.2%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.2%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Cramer)</td>
+<td>3</td>
+<td>0.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 0.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="section-1" class="section-content ">
+<div class="card">
+<div class="card-header">
+<h2 class="card-title">Análise: 1ª Frequência (FREQ1)</h2>
+<span class="total-badge">Total de Questões Analisadas: 207</span>
+</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Tipo de Questão</th><th>Ocorrências</th><th>Percentagem</th><th>Dificuldade</th></tr></thead>
+<tbody>
+<tr class="data-row">
+<td>Operações com Matrizes e Equações</td>
+<td>53</td>
+<td>25.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 25.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Inversão de Matrizes</td>
+<td>37</td>
+<td>17.9%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 17.9%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Outros</td>
+<td>28</td>
+<td>13.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 13.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Gauss)</td>
+<td>23</td>
+<td>11.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 11.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Cálculo de Determinantes</td>
+<td>21</td>
+<td>10.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 10.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Característica de Matriz</td>
+<td>18</td>
+<td>8.7%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 8.7%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Independência Linear</td>
+<td>7</td>
+<td>3.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Base e Dimensão</td>
+<td>7</td>
+<td>3.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Sistemas com parâmetros (Discussão)</td>
+<td>6</td>
+<td>2.9%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.9%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Produto Interno e Gram-Schmidt</td>
+<td>3</td>
+<td>1.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Cramer)</td>
+<td>2</td>
+<td>1.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Subespaços Vetoriais</td>
+<td>2</td>
+<td>1.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="section-2" class="section-content ">
+<div class="card">
+<div class="card-header">
+<h2 class="card-title">Análise: 2ª Frequência (FREQ2)</h2>
+<span class="total-badge">Total de Questões Analisadas: 298</span>
+</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Tipo de Questão</th><th>Ocorrências</th><th>Percentagem</th><th>Dificuldade</th></tr></thead>
+<tbody>
+<tr class="data-row">
+<td>Valores e Vetores Próprios</td>
+<td>54</td>
+<td>18.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 18.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Outros</td>
+<td>47</td>
+<td>15.8%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 15.8%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Distâncias, Ângulos, Áreas e Volumes</td>
+<td>44</td>
+<td>14.8%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 14.8%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Base e Dimensão</td>
+<td>33</td>
+<td>11.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 11.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Diagonalização de Matrizes</td>
+<td>25</td>
+<td>8.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 8.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Independência Linear</td>
+<td>22</td>
+<td>7.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Operações com Matrizes e Equações</td>
+<td>21</td>
+<td>7.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Gauss)</td>
+<td>12</td>
+<td>4.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Retas e Planos</td>
+<td>10</td>
+<td>3.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Subespaços Vetoriais</td>
+<td>9</td>
+<td>3.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Inversão de Matrizes</td>
+<td>8</td>
+<td>2.7%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.7%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Cálculo de Determinantes</td>
+<td>7</td>
+<td>2.3%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.3%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Sistemas com parâmetros (Discussão)</td>
+<td>3</td>
+<td>1.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Produto Interno e Gram-Schmidt</td>
+<td>3</td>
+<td>1.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="section-3" class="section-content ">
+<div class="card">
+<div class="card-header">
+<h2 class="card-title">Análise: Exame de Época Normal (EEN)</h2>
+<span class="total-badge">Total de Questões Analisadas: 124</span>
+</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Tipo de Questão</th><th>Ocorrências</th><th>Percentagem</th><th>Dificuldade</th></tr></thead>
+<tbody>
+<tr class="data-row">
+<td>Outros</td>
+<td>23</td>
+<td>18.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 18.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Distâncias, Ângulos, Áreas e Volumes</td>
+<td>17</td>
+<td>13.7%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 13.7%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Operações com Matrizes e Equações</td>
+<td>12</td>
+<td>9.7%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 9.7%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Gauss)</td>
+<td>10</td>
+<td>8.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 8.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Independência Linear</td>
+<td>8</td>
+<td>6.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 6.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Cálculo de Determinantes</td>
+<td>7</td>
+<td>5.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 5.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Valores e Vetores Próprios</td>
+<td>7</td>
+<td>5.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 5.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Base e Dimensão</td>
+<td>7</td>
+<td>5.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 5.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Inversão de Matrizes</td>
+<td>6</td>
+<td>4.8%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.8%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Sistemas com parâmetros (Discussão)</td>
+<td>6</td>
+<td>4.8%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.8%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Retas e Planos</td>
+<td>5</td>
+<td>4.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Diagonalização de Matrizes</td>
+<td>5</td>
+<td>4.0%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.0%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Subespaços Vetoriais</td>
+<td>4</td>
+<td>3.2%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.2%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Característica de Matriz</td>
+<td>4</td>
+<td>3.2%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 3.2%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Produto Interno e Gram-Schmidt</td>
+<td>2</td>
+<td>1.6%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 1.6%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Cramer)</td>
+<td>1</td>
+<td>0.8%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 0.8%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="section-4" class="section-content ">
+<div class="card">
+<div class="card-header">
+<h2 class="card-title">Análise: Exame de Época de Recurso (EER)</h2>
+<span class="total-badge">Total de Questões Analisadas: 41</span>
+</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Tipo de Questão</th><th>Ocorrências</th><th>Percentagem</th><th>Dificuldade</th></tr></thead>
+<tbody>
+<tr class="data-row">
+<td>Outros</td>
+<td>8</td>
+<td>19.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 19.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Geometria: Distâncias, Ângulos, Áreas e Volumes</td>
+<td>8</td>
+<td>19.5%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 19.5%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Operações com Matrizes e Equações</td>
+<td>7</td>
+<td>17.1%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 17.1%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Inversão de Matrizes</td>
+<td>3</td>
+<td>7.3%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.3%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Resolução de Sistemas (Gauss)</td>
+<td>3</td>
+<td>7.3%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.3%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Valores e Vetores Próprios</td>
+<td>3</td>
+<td>7.3%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 7.3%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+<tr class="data-row">
+<td>Característica de Matriz</td>
+<td>2</td>
+<td>4.9%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.9%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Cálculo de Determinantes</td>
+<td>2</td>
+<td>4.9%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.9%"></div></div>
+</td>
+<td><span class="diff-badge diff-2">2</span></td>
+</tr>
+<tr class="data-row">
+<td>Subespaços Vetoriais</td>
+<td>2</td>
+<td>4.9%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 4.9%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Sistemas com parâmetros (Discussão)</td>
+<td>1</td>
+<td>2.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Diagonalização de Matrizes</td>
+<td>1</td>
+<td>2.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-4">4</span></td>
+</tr>
+<tr class="data-row">
+<td>Independência Linear</td>
+<td>1</td>
+<td>2.4%
+<div class="progress-bar-container"><div class="progress-bar" style="width: 2.4%"></div></div>
+</td>
+<td><span class="diff-badge diff-3">3</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+        </div>
+    </div>
+
+    <script>
+        function showTab(index) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                if(i === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.section-content').forEach((sec, i) => {
+                if(i === index) sec.classList.add('active');
+                else sec.classList.remove('active');
+            });
+        }
+        
+        // Trigger reflow for progress bars animation on tab switch
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.progress-bar').forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0';
+                    setTimeout(() => { bar.style.width = width; }, 50);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
